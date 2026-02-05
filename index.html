@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工人报工系统</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="page">
+        <div class="login-container">
+            <h1>工人报工系统</h1>
+            <div class="login-form">
+                <h2>登录</h2>
+                <form id="loginForm">
+                    <input type="text" id="username" placeholder="用户名" required>
+                    <input type="password" id="password" placeholder="密码" required>
+                    <select id="userType">
+                        <option value="worker">工人</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                    <button type="submit">登录</button>
+                </form>
+                <div class="demo-accounts">
+                    <p>演示账号：</p>
+                    <p>工人: worker1/123456</p>
+                    <p>管理员: admin/123456</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 工人端页面 -->
+    <div id="workerPage" class="page hidden">
+        <header class="header">
+            <h1>工人报工系统 - 工人端</h1>
+            <div class="user-info">
+                <span id="workerName"></span>
+                <button onclick="logout()">退出登录</button>
+            </div>
+        </header>
+        <main class="main-content">
+            <div class="report-form">
+                <h2>填写今日工作进度</h2>
+                <form id="progressForm">
+                    <div class="form-group">
+                        <label for="workDate">日期：</label>
+                        <input type="date" id="workDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workType">工作类型：</label>
+                        <select id="workType" required>
+                            <option value="">请选择</option>
+                            <option value="construction">建筑施工</option>
+                            <option value="installation">设备安装</option>
+                            <option value="maintenance">维护检修</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="workHours">工作时长（小时）：</label>
+                        <input type="number" id="workHours" min="0" max="24" step="0.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workDescription">工作描述：</label>
+                        <textarea id="workDescription" rows="4" placeholder="请描述今日完成的工作内容..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="workProgress">完成进度（%）：</label>
+                        <input type="number" id="workProgress" min="0" max="100" required>
+                    </div>
+                    <button type="submit">提交报告</button>
+                </form>
+                <div id="submitMessage" class="message"></div>
+            </div>
+        </main>
+    </div>
+    <!-- 管理员端页面 -->
+    <div id="adminPage" class="page hidden">
+        <header class="header">
+            <h1>工人报工系统 - 管理员端</h1>
+            <div class="user-info">
+                <span id="adminName"></span>
+                <button onclick="logout()">退出登录</button>
+            </div>
+        </header>
+        <main class="main-content">
+            <div class="admin-dashboard">
+                <h2>工人工作进度总览</h2>
+                <div class="filter-controls">
+                    <input type="date" id="filterDate" placeholder="选择日期">
+                    <select id="filterWorker">
+                        <option value="">所有工人</option>
+                    </select>
+                    <button onclick="filterReports()">筛选</button>
+                    <button onclick="clearFilters()">清除筛选</button>
+                </div>
+                <div class="reports-table">
+                    <table id="reportsTable">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>工人姓名</th>
+                                <th>工作类型</th>
+                                <th>工作时长</th>
+                                <th>工作描述</th>
+                                <th>完成进度</th>
+                                <th>提交时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
