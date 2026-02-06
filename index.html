@@ -1,11 +1,187 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://.firebaseio.com https://.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://.firebase.com https://.googleapis.com;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 修正内容安全策略（CSP）配置，补充通配符* -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebase.com https://*.googleapis.com;">
     <title>工人报工系统</title>
-    <link rel="stylesheet" href="style.css">
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <!-- 统一使用Firebase 8.10.0（全局版本，避免版本冲突） -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <!-- 内嵌基础样式，无需依赖外部style.css -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* 登录页面样式 */
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .login-container h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .login-form h2 {
+            text-align: center;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .login-form input, .login-form select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .login-form button {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .login-form button:hover {
+            background: #0056b3;
+        }
+        .demo-accounts {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+        }
+        /* 头部样式 */
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-info button {
+            padding: 8px 15px;
+            background: white;
+            color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .user-info button:hover {
+            background: #f0f0f0;
+        }
+        /* 主内容样式 */
+        .main-content {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .report-form h2, .admin-dashboard h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .report-form button {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .report-form button:hover {
+            background: #218838;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        /* 管理员端样式 */
+        .filter-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-controls input, .filter-controls select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .filter-controls button {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .filter-controls button:hover {
+            background: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+    </style>
+</head>
 <body>
     <!-- 登录页面 -->
     <div id="loginPage" class="page">
@@ -30,6 +206,7 @@
             </div>
         </div>
     </div>
+
     <!-- 工人端页面 -->
     <div id="workerPage" class="page hidden">
         <header class="header">
@@ -49,12 +226,38 @@
                     </div>
                     <div class="form-group">
                         <label for="workType">工作类型：</label>
+                        <!-- 核心修改1：家装+工装全链路施工类型下拉选项 -->
                         <select id="workType" required>
-                            <option value="">请选择</option>
-                            <option value="construction">建筑施工</option>
-                            <option value="installation">设备安装</option>
-                            <option value="maintenance">维护检修</option>
-                            <option value="other">其他</option>
+                            <option value="">请选择施工类型</option>
+                            <!-- 前期启动 -->
+                            <option value="siteSurvey">现场勘测</option>
+                            <option value="materialEntry">材料进场</option>
+                            <option value="structureDemolition">墙体拆改</option>
+                            <!-- 基础硬装 -->
+                            <option value="hydropowerReform">水电改造</option>
+                            <option value="tilingPaving">瓷砖铺贴</option>
+                            <option value="groundTreatment">地面处理</option>
+                            <!-- 定制/结构制作 -->
+                            <option value="woodworking">木工制作</option>
+                            <option value="metalProcessing">金属加工</option>
+                            <option value="concretePouring">混凝土浇筑</option>
+                            <!-- 安装工程 -->
+                            <option value="doorWindowInstall">门窗安装</option>
+                            <option value="kitchenBathInstall">厨卫安装</option>
+                            <option value="equipmentInstall">设备安装</option>
+                            <option value="pipelineInstall">管线安装</option>
+                            <!-- 饰面涂装 -->
+                            <option value="wallPainting">墙面漆艺</option>
+                            <option value="stoneCladding">石材干挂</option>
+                            <option value="caulkingSealing">美缝打胶</option>
+                            <!-- 收尾配套 -->
+                            <option value="finishedProtection">成品保护</option>
+                            <option value="softDecoration">软装布置</option>
+                            <option value="cleaning">保洁清理</option>
+                            <!-- 最终交付 -->
+                            <option value="completionAcceptance">竣工验收</option>
+                            <!-- 兜底项 -->
+                            <option value="other">其他施工</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -75,6 +278,7 @@
             </div>
         </main>
     </div>
+
     <!-- 管理员端页面 -->
     <div id="adminPage" class="page hidden">
         <header class="header">
@@ -115,28 +319,250 @@
             </div>
         </main>
     </div>
-    <script src="script.js"></script><script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyB1c9EJy-gGR5mG4d74BSnyziZqiNUx9rU",
-    authDomain: "daka-system.firebaseapp.com",
-    projectId: "daka-system",
-    storageBucket: "daka-system.firebasestorage.app",
-    messagingSenderId: "983975087993",
-    appId: "1:983975087993:web:5fc2b2858246836113a9a8",
-    measurementId: "G-MFH3BZXSMX"
-  };
+    <!-- 核心业务逻辑 -->
+    <script>
+        // 1. 初始化Firebase（适配8.10.0全局版本）
+        const firebaseConfig = {
+            apiKey: "AIzaSyB1c9EJy-gGR5mG4d74BSnyziZqiNUx9rU",
+            authDomain: "daka-system.firebaseapp.com",
+            projectId: "daka-system",
+            storageBucket: "daka-system.firebasestorage.app",
+            messagingSenderId: "983975087993",
+            appId: "1:983975087993:web:5fc2b2858246836113a9a8",
+            measurementId: "G-MFH3BZXSMX"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-  // Initialize Firebase
-const app = initializeApp (firebaseConfig);
-const analytics = getAnalytics (app);
-</script>
+        // 2. 登录逻辑
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            // 阻止表单默认刷新行为
+            e.preventDefault();
+            
+            // 获取表单值
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const userType = document.getElementById('userType').value;
+
+            // 演示账号验证（核心登录逻辑）
+            const demoAccounts = {
+                worker: { name: 'worker1', pwd: '123456' },
+                admin: { name: 'admin', pwd: '123456' }
+            };
+
+            // 验证账号密码
+            if (userType === 'worker' && username === demoAccounts.worker.name && password === demoAccounts.worker.pwd) {
+                // 工人登录成功
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('workerPage').classList.remove('hidden');
+                document.getElementById('workerName').textContent = username;
+                // 默认填充今日日期
+                document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
+            } else if (userType === 'admin' && username === demoAccounts.admin.name && password === demoAccounts.admin.pwd) {
+                // 管理员登录成功
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('adminPage').classList.remove('hidden');
+                document.getElementById('adminName').textContent = username;
+                // 加载所有报工数据
+                loadAllReports();
+            } else {
+                alert('用户名或密码错误！\n演示账号：\n工人: worker1/123456\n管理员: admin/123456');
+            }
+        });
+
+        // 3. 退出登录逻辑
+        function logout() {
+            // 隐藏工人/管理员页面，显示登录页
+            document.getElementById('workerPage').classList.add('hidden');
+            document.getElementById('adminPage').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            // 清空登录表单
+            document.getElementById('loginForm').reset();
+            // 清空提交提示
+            document.getElementById('submitMessage').style.display = 'none';
+        }
+
+        // 4. 工人提交报工逻辑
+        document.getElementById('progressForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitMsg = document.getElementById('submitMessage');
+            
+            // 获取表单数据
+            const workDate = document.getElementById('workDate').value;
+            const workType = document.getElementById('workType').value;
+            const workHours = document.getElementById('workHours').value;
+            const workDescription = document.getElementById('workDescription').value.trim();
+            const workProgress = document.getElementById('workProgress').value;
+            const workerName = document.getElementById('workerName').textContent;
+            const submitTime = new Date().toLocaleString();
+
+            try {
+                // 提交到Firebase Firestore
+                await db.collection('workReports').add({
+                    workDate,
+                    workType,
+                    workHours,
+                    workDescription,
+                    workProgress,
+                    workerName,
+                    submitTime
+                });
+
+                // 提交成功提示
+                submitMsg.textContent = '提交成功！';
+                submitMsg.style.display = 'block';
+                submitMsg.style.background = '#d4edda';
+                submitMsg.style.color = '#155724';
+                // 清空表单
+                this.reset();
+                // 默认填充今日日期
+                document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
+                // 3秒后隐藏提示
+                setTimeout(() => submitMsg.style.display = 'none', 3000);
+            } catch (error) {
+                // 提交失败提示
+                submitMsg.textContent = `提交失败：${error.message}`;
+                submitMsg.style.display = 'block';
+                submitMsg.style.background = '#f8d7da';
+                submitMsg.style.color = '#721c24';
+            }
+        });
+
+        // 5. 管理员加载所有报工数据
+        async function loadAllReports() {
+            const reportsBody = document.getElementById('reportsBody');
+            reportsBody.innerHTML = ''; // 清空表格
+
+            try {
+                const querySnapshot = await db.collection('workReports').get();
+                if (querySnapshot.empty) {
+                    reportsBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">暂无报工数据</td></tr>';
+                    return;
+                }
+
+                // 遍历数据填充表格
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${data.workDate}</td>
+                        <td>${data.workerName}</td>
+                        <td>${formatWorkType(data.workType)}</td>
+                        <td>${data.workHours}小时</td>
+                        <td>${data.workDescription}</td>
+                        <td>${data.workProgress}%</td>
+                        <td>${data.submitTime}</td>
+                    `;
+                    reportsBody.appendChild(tr);
+                });
+
+                // 加载工人列表到筛选下拉框
+                loadWorkerList(querySnapshot);
+            } catch (error) {
+                reportsBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">加载失败：${error.message}</td></tr>`;
+            }
+        }
+
+        // 6. 格式化工作类型显示（核心修改2：家装+工装全链路映射）
+        function formatWorkType(type) {
+            const typeMap = {
+                'siteSurvey': '现场勘测',
+                'materialEntry': '材料进场',
+                'structureDemolition': '墙体拆改',
+                'hydropowerReform': '水电改造',
+                'tilingPaving': '瓷砖铺贴',
+                'groundTreatment': '地面处理',
+                'woodworking': '木工制作',
+                'metalProcessing': '金属加工',
+                'concretePouring': '混凝土浇筑',
+                'doorWindowInstall': '门窗安装',
+                'kitchenBathInstall': '厨卫安装',
+                'equipmentInstall': '设备安装',
+                'pipelineInstall': '管线安装',
+                'wallPainting': '墙面漆艺',
+                'stoneCladding': '石材干挂',
+                'caulkingSealing': '美缝打胶',
+                'finishedProtection': '成品保护',
+                'softDecoration': '软装布置',
+                'cleaning': '保洁清理',
+                'completionAcceptance': '竣工验收',
+                'other': '其他施工'
+            };
+            return typeMap[type] || type;
+        }
+
+        // 7. 加载工人列表到筛选下拉框
+        function loadWorkerList(snapshot) {
+            const filterWorker = document.getElementById('filterWorker');
+            const workerSet = new Set();
+            
+            // 提取所有工人姓名
+            snapshot.forEach(doc => {
+                workerSet.add(doc.data().workerName);
+            });
+
+            // 填充下拉框
+            workerSet.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                filterWorker.appendChild(option);
+            });
+        }
+
+        // 8. 管理员筛选报工数据
+        async function filterReports() {
+            const filterDate = document.getElementById('filterDate').value;
+            const filterWorker = document.getElementById('filterWorker').value;
+            const reportsBody = document.getElementById('reportsBody');
+            reportsBody.innerHTML = '';
+
+            try {
+                let query = db.collection('workReports');
+                // 按日期筛选
+                if (filterDate) {
+                    query = query.where('workDate', '==', filterDate);
+                }
+                // 按工人筛选
+                if (filterWorker) {
+                    query = query.where('workerName', '==', filterWorker);
+                }
+
+                const querySnapshot = await query.get();
+                if (querySnapshot.empty) {
+                    reportsBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">暂无匹配数据</td></tr>';
+                    return;
+                }
+
+                // 填充筛选结果
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${data.workDate}</td>
+                        <td>${data.workerName}</td>
+                        <td>${formatWorkType(data.workType)}</td>
+                        <td>${data.workHours}小时</td>
+                        <td>${data.workDescription}</td>
+                        <td>${data.workProgress}%</td>
+                        <td>${data.submitTime}</td>
+                    `;
+                    reportsBody.appendChild(tr);
+                });
+            } catch (error) {
+                reportsBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">筛选失败：${error.message}</td></tr>`;
+            }
+        }
+
+        // 9. 清除筛选条件
+        function clearFilters() {
+            document.getElementById('filterDate').value = '';
+            document.getElementById('filterWorker').value = '';
+            // 重新加载所有数据
+            loadAllReports();
+        }
+    </script>
 </body>
 </html>
