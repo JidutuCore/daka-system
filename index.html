@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://.firebaseio.com https://.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://.firebase.com https://.googleapis.com;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>工人报工系统</title>
     <link rel="stylesheet" href="style.css">
-</head>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <body>
     <!-- 登录页面 -->
     <div id="loginPage" class="page">
@@ -115,6 +117,28 @@
             </div>
         </main>
     </div>
-    <script src="script.js"></script>
+    <script src="script.js"></script><script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyB1c9EJy-gGR5mG4d74BSnyziZqiNUx9rU",
+    authDomain: "daka-system.firebaseapp.com",
+    projectId: "daka-system",
+    storageBucket: "daka-system.firebasestorage.app",
+    messagingSenderId: "983975087993",
+    appId: "1:983975087993:web:5fc2b2858246836113a9a8",
+    measurementId: "G-MFH3BZXSMX"
+  };
+
+  // Initialize Firebase
+const app = initializeApp (firebaseConfig);
+const analytics = getAnalytics (app);
+</script>
 </body>
 </html>
